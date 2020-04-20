@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -18,14 +18,14 @@
       var baseUrl = "https://${yourOktaDomain}";
       var xhr = new XMLHttpRequest();
       if ("withCredentials" in xhr) {
-        xhr.onerror = function() {
+        xhr.onerror = function () {
           alert(
             "Invalid URL or Cross-Origin Request Blocked.  You must explicitly add this site (" +
               window.location.origin +
               ") to the list of allowed websites in the administrator UI"
           );
         };
-        xhr.onload = function() {
+        xhr.onload = function () {
           alert(this.responseText);
         };
         xhr.open(
@@ -42,28 +42,168 @@
 
     <div id="widget-container"></div>
     <script>
-          var signIn = new OktaSignIn({
-            baseUrl: "https://semonav2.oktapreview.com",
-            features: {
-        idpDiscovery: true
-      }
-          });
-          signIn.renderEl(
-            {
-              el: "#widget-container"
-            },
-            function success(res) {
-              if (res.status === "SUCCESS") {
-                res.session.setCookieAndRedirect("http://localhost:8000/");
-              } else {
-                // The user can be in another authentication state that requires further action.
-                // For more information about these states, see:
-                //   https://github.com/okta/okta-signin-widget#rendereloptions-success-error
-              }
-            }
-          );
+           var signIn = new OktaSignIn({
+             // Enable or disable widget functionality with the following options. Some of these features require additional configuration in your Okta admin settings. Detailed information can be found here: https://github.com/okta/okta-signin-widget#okta-sign-in-widget
+             // Look and feel changes:
+             el: "#widget-container",
+             logo:
+               "https://res.cloudinary.com/dvhvxgxtf/image/upload/v1552451429/COIN_IMAGE_idcjxe.png", // Try changing "okta.com" to other domains, like: "workday.com", "splunk.com", or "delmonte.com"
+             language: "en", // Try: [fr, de, es, ja, zh-CN] Full list: https://github.com/okta/okta-signin-widget#language-and-text
+             i18n: {
+               //Overrides default text when using English. Override other languages by adding additional sections.
+               en: {
+                 "primaryauth.title": "Semona Testing", // Changes the sign in text
+                 "primaryauth.submit": "Sign In" // Changes the sign in button
+                 // More e.g. [primaryauth.username.placeholder,  primaryauth.password.placeholder, needhelp, etc.].
+                 // Full list here: https://github.com/okta/okta-signin-widget/blob/master/packages/@okta/i18n/dist/properties/login.properties
+               }
+             },
+             // Changes to widget functionality
+             features: {
+               registration: true, // Enable self-service registration flow
+               rememberMe: true, // Setting to false will remove the checkbox to save username
+               //multiOptionalFactorEnroll: true,  // Allow users to enroll in multiple optional factors before finishing the authentication flow.
+               //selfServiceUnlock: true,          // Will enable unlock in addition to forgotten password
+               //smsRecovery: true,                // Enable SMS-based account recovery
+               //callRecovery: true,               // Enable voice call-based account recovery
+               router: true // Leave this set to true for the API demo
+             },
+             baseUrl: "https://semonav2.oktapreview.com/",
+             redirectUri: "http://localhost:8000/OktaV2.html",
+             authParams: {
+               display: "page",
+               pkce: true
+             },
+             features: {
+               idpDiscovery: false
+             },
+
+             idps: [
+               { type: "GOOGLE", id: "0oaaix1twko0jyKik0g4" },
+               { type: "FACEBOOK", id: "0oaqmqvvf5F8f24lK0h7" },
+               { type: "LINKEDIN", id: "0oaaix1twko0jyKik0g4" },
+               {
+                 id: "0oabds23xM3ssMjosl0g5",
+                 text: "Login with Joe",
+                 className: "with-joe"
+               }
+             ]
+           });
+
+           if (signIn.hasTokensInUrl()) {
+             // The user has just successfully completed a redirect
+             console.log("You made it!")
+           } else {
+             // There are no tokens in the URL, render the Sign-In Widget.
+             signIn.showSignInToGetTokens({
+             clientId: "0oaqfwgcaceDequcI0h7",
+             redirectUri: "http://localhost:8000/OktaV2.html",
+
+             // Return an access token from the authorization server
+             getAccessToken: true,
+
+             // Return an ID token from the authorization server
+             getIdToken: true,
+
+             scope: "openid profile"
+           });
+           }
+
+
+
+           // signIn.renderEl(
+           //   {
+           //     el: "#widget-container"
+           //   },
+           //   function success(res) {
+           //     if (res.status === "SUCCESS") {
+           //       res.session.setCookieAndRedirect(
+           //         "http://localhost:8000/OktaV2.html"
+           //       );
+           //     } else {
+           //       // The user can be in another authentication state that requires further action.
+           //       // For more information about these states, see:
+           //       //   https://github.com/okta/okta-signin-widget#rendereloptions-success-error
+           //     }
+           //   }
+           // );
     </script>
   </head>
 
   <body></body>
+</html> -->
+
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+    <title>Simple Web Page</title>
+    <style>
+      h1 {
+        margin: 2em 0;
+      }
+    </style>
+    <!-- widget stuff here -->
+    <script src="https://ok1static.oktacdn.com/assets/js/sdk/okta-signin-widget/2.16.0/js/okta-sign-in.min.js" type="text/javascript"></script>
+    <link href="https://ok1static.oktacdn.com/assets/js/sdk/okta-signin-widget/2.16.0/css/okta-sign-in.min.css" type="text/css" rel="stylesheet"/>
+    <link href="https://ok1static.oktacdn.com/assets/js/sdk/okta-signin-widget/2.16.0/css/okta-theme.css" type="text/css" rel="stylesheet"/>
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="text-center">Simple Web Page</h1>
+      <div id="messageBox" class="jumbotron">
+        You are not logged in. Get outta here! Shoo! >:S
+      </div>
+      <!-- where the sign-in form will be displayed -->
+      <div id="okta-login-container"></div>
+    </div>
+    <script type="text/javascript">
+      var oktaSignIn = new OktaSignIn({
+        baseUrl: "https://subdomain.okta.com",
+        clientId: "your client id",
+        authParams: {
+          issuer: "https://subdomain.okta.com",
+          responseType: ['token', 'id_token'],
+          display: 'page'
+        }
+      });
+
+      if (oktaSignIn.token.hasTokensInUrl()) {
+        oktaSignIn.token.parseTokensFromUrl(
+          // If we get here, the user just logged in.
+          function success(res) {
+            var accessToken = res[0];
+            var idToken = res[1];
+
+            oktaSignIn.tokenManager.add('accessToken', accessToken);
+            oktaSignIn.tokenManager.add('idToken', idToken);
+
+            window.location.hash='';
+            document.getElementById("messageBox").innerHTML = "Hello, " + idToken.claims.email + "! You just logged in! :)";
+          },
+          function error(err) {
+            console.error(err);
+          }
+        );
+      } else {
+        oktaSignIn.session.get(function (res) {
+          // If we get here, the user is already signed in.
+          if (res.status === 'ACTIVE') {
+            document.getElementById("messageBox").innerHTML = "Hello, " + res.login + "! You are *still* logged in! :)";
+            return;
+          }
+          oktaSignIn.renderEl(
+            { el: '#okta-login-container' },
+            function success(res) {},
+            function error(err) {
+              console.error(err);
+            }
+          );
+        });
+      }
+    </script>
+  </body>
 </html>

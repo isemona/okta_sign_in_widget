@@ -1,0 +1,106 @@
+<script
+  src="https://ok1static.oktacdn.com/assets/js/sdk/okta-auth-js/2.0.1/okta-auth-js.min.js"
+  type="text/javascript"
+></script>
+
+<body>
+  <script>
+    // Bootstrap the AuthJS Client
+    var authClient = new OktaAuth({
+      // Org URL
+      url: "https://semonav2.oktapreview.com",
+      // OpenID Connect APP Client ID
+      clientId: "your client id",
+      // Trusted Origin Redirect URI
+      redirectUri: "http://localhost:8000/authjs-signin.html"
+    });
+    // Attempt to retrieve ID Token from Token Manager
+    var idToken = authClient.tokenManager.get("idToken").then(idToken => {
+      // If ID Token exists, output it to the console
+      if (idToken) {
+        console.log(`hi ${idToken.claims.email}!`);
+        // If ID Token isn't found, try to parse it from the current URL
+      } else if (location.hash) {
+        authClient.token.parseFromUrl().then(idToken => {
+          console.log(`hi ${idToken.claims.email}!`);
+          // Store parsed token in Token Manager
+          authClient.tokenManager.add("idToken", idToken);
+          console.log(idToken);
+        });
+      } else {
+        // You're not logged in, you need a sessionToken
+        var username = prompt("What is your username?");
+        // Forgot password flow
+        // var forgot = prompt("Did you forget?? Your password?");
+        // if (forgot.toLowerCase() == "yes") {
+        //   authClient
+        //     .forgotPassword({ username: username, factorType: "EMAIL" })
+        //     .then(function(res) {
+        //       var passcode = prompt("Give me your passcode!");
+        //       return res.verify({
+        //         passCode: passcode // The passCode from the SMS or CALL
+        //       });
+        //     })
+        //     .then(function(res) {
+        //       if (res.status === "SUCCESS") {
+        //         authClient.session.setCookieAndRedirect(res.sessionToken);
+        //       } else {
+        //         throw "We cannot handle the " + res.status + " status";
+        //       }
+        //     })
+        //     .catch(function(err) {
+        //       console.error(err);
+        //     });
+        // } else {
+        //   var password = prompt("What is your password?");
+        // }
+        var password = prompt("What is your password?");
+
+        authClient.signIn({username: username, password: password}).then(function(res) {
+            console.log(res)
+            if (res.status === "SUCCESS") {
+              console.log(res.sessionToken);
+            } else if (res.status === "MFA_REQUIRED") {
+              var pushFactor = res.factors.find(function(factor) {
+                return (
+                  factor.provider === "OKTA" && factor.factorType === "push"
+                );
+              });
+              return pushFactor.verify();
+            }
+          })
+          .then(function(res) {
+            if (res.status === "MFA_CHALLENGE" && res.factorResult === "WAITING") {
+              return res.poll();
+            }
+          })
+          .then(function(res) {
+            console.log(res.sessionToken);
+          })
+          .catch(function(err) {
+            console.error(err);
+          });
+
+        // authClient.signIn({ username, password }).then(res => {
+        //   console.log(res);
+
+        //   if (res.status === "SUCCESS") {
+        //     console.log("hey!");
+        //     authClient.token.getWithRedirect({
+        //       sessionToken: res.sessionToken,
+        //       responseType: "id_token"
+        //     });
+        //   }
+        // });
+      }
+    });
+
+    function myFunction() {
+      authClient.signOut();
+    }
+
+    // forgot password
+  </script>
+
+  <button onclick="myFunction()">Click me</button>
+</body>
